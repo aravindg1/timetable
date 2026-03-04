@@ -656,30 +656,16 @@ export default function App() {
   const weekDates = getWeekDates(weekOffset); 
 
   // Reminder polling
-  useEffect(() => {
-    const tick = setInterval(() => {
-      const now = new Date();
-      const todayName = DAYS[((now.getDay() + 6) % 7)];
-
-      setActivities((prev) =>
-        prev.map((a) => {
-          if (!a.reminder || a.reminded || a.done) return a;
-          const [sh, sm] = a.start.split(":").map(Number);
-          const startTotal = sh * 60 + sm;
-          const nowTotal = now.getHours() * 60 + now.getMinutes();
-          const diff = startTotal - nowTotal;
-          if (a.day === todayName && diff >= 0 && diff <= a.reminderMins) {
-            const id = Date.now();
-            setToasts((prev) => [...prev, { id, activity: a }]);
-            setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 8000);
-            return { ...a, reminded: true };
-          }
-          return a;
-        })
-      );
-    }, 30000);
-    return () => clearInterval(tick);
-  }, []);// eslint-disable-line react-hooks/exhaustive-deps
+useEffect(() => {
+  const loadActivities = async () => {
+    const { data, error } = await supabase
+      .from('activities')
+      .select('*')
+      .order('created_at', { ascending: true })
+    if (data) setActivities(data)
+  }
+  loadActivities();
+}, []);
 
   const dismissToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
@@ -695,19 +681,38 @@ export default function App() {
 
   const closeModal = () => setModal(null);
 
-  const saveActivity = () => {
-    if (!form.title?.trim()) return;
-    if (modal.mode === "add") {
-      const cat = getCat(form.category);
-      setActivities((prev) => [...prev, { ...form, id: nextId++, color: cat.color, done: false, reminded: false }]);
-    } else {
-      setActivities((prev) => prev.map((a) => (a.id === form.id ? { ...form, reminded: false } : a)));
-    }
-    closeModal();
-  };
+  const saveActivity = async () => {
+  if (!form.title?.trim()) return
+  if (modal.mode === 'add') {
+    const cat = getCat(form.category)
+    const newActivity = { ...form, color: cat.color, done: false, reminded: false }
+    const { data } = await supabase
+      .from('activities')
+      .insert([newActivity])
+      .select()
+    if (data) setActivities((prev) => [...prev, data[0]])
+  } else {
+    await supabase
+      .from('activities')
+      .update(form)
+      .eq('id', form.id)
+    setActivities((prev) => prev.map((a) => a.id === form.id ? form : a))
+  }
+  closeModal();
+}
 
-  const deleteActivity = (id) => setActivities((prev) => prev.filter((a) => a.id !== id));
-  const toggleDone = (id) => setActivities((prev) => prev.map((a) => a.id === id ? { ...a, done: !a.done } : a));
+  const deleteActivity = async (id) => {
+  await supabase.from('activities').delete().eq('id', id)
+  setActivities((prev) => prev.filter((a) => a.id !== id))
+}
+  const toggleDone = async (id) => {
+  const activity = activities.find((a) => a.id === id)
+  await supabase
+    .from('activities')
+    .update({ done: !activity.done })
+    .eq('id', id)
+  setActivities((prev) => prev.map((a) => a.id === id ? { ...a, done: !a.done } : a))
+}
 
   const pendingReminders = (day) => activities.filter((a) => a.day === day && a.reminder && !a.done && !a.reminded).length;
 
