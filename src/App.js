@@ -646,8 +646,6 @@ const STYLES = `
   .toast-dismiss:hover { background: rgba(0,0,0,0.12); color: #3A4255; }
 `;
 
-let nextId = 100;
-
 export default function App() {
   const [activities, setActivities] = useState(initialActivities);
   const [weekOffset, setWeekOffset] = useState(0);
@@ -659,7 +657,7 @@ export default function App() {
   // Reminder polling
 useEffect(() => {
   const loadActivities = async () => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('activities')
       .select('*')
       .order('created_at', { ascending: true })
