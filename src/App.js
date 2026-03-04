@@ -660,8 +660,6 @@ export default function App() {
     const tick = setInterval(() => {
       const now = new Date();
       const todayName = DAYS[((now.getDay() + 6) % 7)];
-      const hh = now.getHours().toString().padStart(2, "0");
-      const mm = now.getMinutes().toString().padStart(2, "0");
 
       setActivities((prev) =>
         prev.map((a) => {
@@ -671,7 +669,9 @@ export default function App() {
           const nowTotal = now.getHours() * 60 + now.getMinutes();
           const diff = startTotal - nowTotal;
           if (a.day === todayName && diff >= 0 && diff <= a.reminderMins) {
-            fireToast(a);
+            const id = Date.now();
+            setToasts((prev) => [...prev, { id, activity: a }]);
+            setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 8000);
             return { ...a, reminded: true };
           }
           return a;
@@ -679,8 +679,7 @@ export default function App() {
       );
     }, 30000);
     return () => clearInterval(tick);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []);// eslint-disable-line react-hooks/exhaustive-deps
 
   const fireToast = (activity) => {
     const id = Date.now();
