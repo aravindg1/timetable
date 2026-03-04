@@ -653,7 +653,7 @@ export default function App() {
   const [modal, setModal] = useState(null); // null | { mode: 'add'|'edit', day?, activity? }
   const [toasts, setToasts] = useState([]);
   const [form, setForm] = useState({});
-  const weekDates = getWeekDates(weekOffset);
+  const weekDates = getWeekDates(weekOffset); 
 
   // Reminder polling
   useEffect(() => {
