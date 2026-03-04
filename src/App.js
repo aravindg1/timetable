@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const CATEGORIES = [
@@ -662,7 +662,6 @@ export default function App() {
       const todayName = DAYS[((now.getDay() + 6) % 7)];
       const hh = now.getHours().toString().padStart(2, "0");
       const mm = now.getMinutes().toString().padStart(2, "0");
-      const nowStr = `${hh}:${mm}`;
 
       setActivities((prev) =>
         prev.map((a) => {
@@ -680,6 +679,7 @@ export default function App() {
       );
     }, 30000);
     return () => clearInterval(tick);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fireToast = (activity) => {
