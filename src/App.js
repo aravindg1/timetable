@@ -681,15 +681,6 @@ export default function App() {
     return () => clearInterval(tick);
   }, []);// eslint-disable-line react-hooks/exhaustive-deps
 
-  const fireToast = (activity) => {
-    const id = Date.now();
-    setToasts((prev) => [
-      ...prev,
-      { id, activity },
-    ]);
-    setTimeout(() => dismissToast(id), 8000);
-  };
-
   const dismissToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
   const openAdd = (day = DAYS[0]) => {
